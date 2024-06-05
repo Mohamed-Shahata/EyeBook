@@ -95,7 +95,8 @@ const CreatePost = () => {
             
             <FormControl>
 
-              <Textarea 
+              <Textarea
+                resize={"none"}
                 placeholder="Post content gose here"
                 onChange={handleTextChange}
                 value={postText}

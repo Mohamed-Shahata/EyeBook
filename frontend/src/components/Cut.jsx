@@ -72,7 +72,7 @@ const Boycott = () => {
               textAlign="center"
               fontSize={20}
             >
-              {item.name}
+              {item.name.toLowerCase()}
             </Box>
           </Box>
         </Box>
