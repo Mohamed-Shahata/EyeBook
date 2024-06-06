@@ -1,85 +1,101 @@
-import { Avatar, Box, Button, Flex, Spinner, Text } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { useState, useEffect } from "react";
-import userAtom from "../atoms/userAtom";
-import useFollowUnfollow from "../hooks/useFollowUnfollow";
+import { Box, Button, Divider, Flex, Image, Input, Text, Spinner } from "@chakra-ui/react";
+import useShowToast from "../hooks/useShowToast";
+import { useEffect, useState } from "react";
+import { SearchIcon } from "@chakra-ui/icons";
 
-const AllUsers = ({ user }) => {
-  const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
-  const currentUser = useRecoilValue(userAtom);
+const Boycott = () => {
+  const [data, setData] = useState([]);
+  const [searchTrim, setSearchTrim] = useState('');
+  const [filterBoycot, setFilterBoycot] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
+  const showToast = useShowToast();
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const getBoycot = async () => {
       try {
-        // Replace with your actual fetch logic
-        const res = await fetch("/api/users");
+        const res = await fetch("/api/poycot");
         const result = await res.json();
 
         if (result.error) {
-          // Handle error
+          showToast("Error", result.error, "error");
           return;
         }
 
         if (Array.isArray(result)) {
-          setUsers(result);
+          setData(result);
         } else {
-          // Handle invalid data format
+          showToast("Error", "Invalid data format", "error");
         }
       } catch (error) {
-        // Handle fetch error
+        showToast("Error", error.message, "error");
+        setData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
-  }, []);
+    getBoycot();
+  }, [showToast]);
 
-  if (loading) {
-    return <Spinner size="xl" />;
-  }
+  useEffect(() => {
+    const result = data.filter(item => item.name.toLowerCase().startsWith(searchTrim.toLowerCase()));
+    setFilterBoycot(result);
+  }, [searchTrim, data]);
 
   return (
-    <>
-      {users.map((user) => (
-        currentUser._id !== user._id && !following ? (
-          <Flex gap={2} justifyContent={"space-between"} alignItems={"center"} mb={5} key={user._id}>
-            <Flex gap={2} as={Link} to={`/${user.username}`}>
-              <Avatar src={user?.profilePic} size={"lg"} name={user.name} />
-              <Box mt={3} mx={1}>
-                <Flex alignItems={"center"}>
-                  <Text fontSize={"md"} fontWeight={"bold"}>
-                    {user?.name}
-                  </Text>
-                  {/* <Image src="/verified.png" w={4} h={4} ml={1}/> */}
-                </Flex>
-                <Text color={"gray.light"} fontSize={"sm"}>
-                  {user?.username}
-                </Text>
+    <Flex wrap="wrap" justifyContent="center" gap={4}>
+      <Box w={"full"} textAlign={"center"}>
+        <Text fontSize={50}>BOYCOTT</Text>
+      </Box>
+      <form>
+        <Flex maxW={500} alignItems={"center"} justifyContent={"center"} columnGap={2}>
+          <Input
+            placeholder="Search For A Boycott"
+            h={"42px"}
+            value={searchTrim}
+            onChange={(e) => setSearchTrim(e.target.value)}
+          />
+          <Button size={"md"}>
+            <SearchIcon />
+          </Button>
+        </Flex>
+      </form>
+      <Divider />
+      {loading ? (
+        <Spinner size="xl" />
+      ) : filterBoycot.length !== 0 ? (
+        filterBoycot.map((item) => (
+          <Box
+            key={item._id}
+            flexDirection={"column"}
+            justifyContent={"space-between"}
+            maxW="250px"
+            display={"flex"}
+            alignItems={"center"}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+          >
+            <Image src={item.img} alt="boycot" h={"100%"} objectFit={"cover"} />
+            <Box p="6">
+              <Box
+                mt="1"
+                fontWeight="semibold"
+                as="h4"
+                lineHeight="tight"
+                textAlign="center"
+                fontSize={20}
+              >
+                {item.name.toLowerCase()}
               </Box>
-            </Flex>
-            <Button
-              ml={1}
-              size={"md"}
-              color={following ? "black" : "white"}
-              bg={following ? "white" : "blue.400"}
-              onClick={handleFollowUnfollow}
-              isLoading={updating}
-              _hover={{
-                color: following ? "black" : "white",
-                opacity: ".8",
-              }}
-            >
-              {following ? "Unfollow" : "Follow"}
-            </Button>
-          </Flex>
-        ) : null
-      ))}
-    </>
+            </Box>
+          </Box>
+        ))
+      ) : (
+        <Text fontSize={40}>No Boycot</Text>
+      )}
+    </Flex>
   );
 };
 
-export default AllUsers;
+export default Boycott;
