@@ -10,7 +10,7 @@ const AllUsers = ({user , loading}) => {
 
 	return (
 		<>
-	{currentUser._id !== user._id && (user.isFrozen === false) && !following  ? (
+	{!loading && currentUser._id !== user._id && (user.isFrozen === false) && !following  ? (
 
 
 			<Flex gap={2} justifyContent={"space-between"} alignItems={"center"} mb={5}>
