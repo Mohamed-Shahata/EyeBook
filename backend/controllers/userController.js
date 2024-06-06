@@ -8,13 +8,13 @@ import mongoose from 'mongoose';
 const getUserProfile = async (req , res) => {
   //we will fetch user profile either with username or userId
   // query is either username or userId
-  const { query } = req.params;
+  const { query } = req.query;
   try {
     let user;
 
     //query is userId
     if(mongoose.Types.ObjectId.isValid(query)){
-      user = await User.findOne({username: query}).select("-password").select("-updatedAt");
+      user = await User.findOne({_id: query}).select("-password").select("-updatedAt");
     }else{
       //query is username
       user = await User.findOne({ username: query }).select("-password").select("-updatedAt");
@@ -91,8 +91,7 @@ const loginUser = async (req , res) => {
       email: user.email,
       username: user.username,
       bio: user.bio,
-      profilePic: user.profilePic,
-      isFrozen: user.isFrozen
+      profilePic: user.profilePic
     })
   } catch (err) {
     res.status(500).json({error: err.message});
@@ -234,7 +233,7 @@ const freezeAccount = async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id);
 		if (!user) {
-			return res.status(400).json({ error: "User not found" });
+			return res.status(404).json({ error: "User not found" });
 		}
 
 		user.isFrozen = true;
