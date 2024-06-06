@@ -91,7 +91,8 @@ const loginUser = async (req , res) => {
       email: user.email,
       username: user.username,
       bio: user.bio,
-      profilePic: user.profilePic
+      profilePic: user.profilePic,
+      isFrozen: user.isFrozen
     })
   } catch (err) {
     res.status(500).json({error: err.message});
@@ -233,7 +234,7 @@ const freezeAccount = async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id);
 		if (!user) {
-			return res.status(404).json({ error: "User not found" });
+			return res.status(400).json({ error: "User not found" });
 		}
 
 		user.isFrozen = true;
