@@ -1,46 +1,65 @@
 import { Box, Button, Divider, Flex, Image, Input, Text, Spinner } from "@chakra-ui/react";
-import useShowToast from "../hooks/useShowToast";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "@chakra-ui/icons";
+import useShowToast from "../hooks/useShowToast";
 
 const Boycott = () => {
   const [data, setData] = useState([]);
   const [searchTrim, setSearchTrim] = useState('');
   const [filterBoycot, setFilterBoycot] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const showToast = useShowToast();
 
-  useEffect(() => {
-    const getBoycot = async () => {
-      try {
-        const res = await fetch("/api/poycot");
-        const result = await res.json();
+  const fetchBoycot = async (page) => {
+    try {
+      setLoadingMore(true);
+      const res = await fetch(`/api/poycot?page=${page}&limit=10`);
+      const result = await res.json();
 
-        if (result.error) {
-          showToast("Error", result.error, "error");
-          return;
-        }
-
-        if (Array.isArray(result)) {
-          setData(result);
-        } else {
-          showToast("Error", "Invalid data format", "error");
-        }
-      } catch (error) {
-        showToast("Error", error.message, "error");
-        setData([]);
-      } finally {
-        setLoading(false);
+      if (result.error) {
+        showToast("Error", result.error, "error");
+        return;
       }
-    };
 
-    getBoycot();
-  }, [showToast]);
+      if (Array.isArray(result.boycotItems)) {
+        setData((prevData) => [...prevData, ...result.boycotItems]);
+        setHasMore(page < result.totalPages);
+      } else {
+        showToast("Error", "Invalid data format", "error");
+      }
+    } catch (error) {
+      showToast("Error", error.message, "error");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBoycot(page);
+  }, [page]);
 
   useEffect(() => {
     const result = data.filter(item => item.name.toLowerCase().startsWith(searchTrim.toLowerCase()));
     setFilterBoycot(result);
   }, [searchTrim, data]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || loadingMore) {
+        return;
+      }
+      if (hasMore) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loadingMore, hasMore]);
 
   return (
     <Flex wrap="wrap" justifyContent="center" gap={4}>
@@ -94,6 +113,7 @@ const Boycott = () => {
       ) : (
         <Text fontSize={40}>No Boycot</Text>
       )}
+      {loadingMore && <Spinner size="md" />}
     </Flex>
   );
 };
