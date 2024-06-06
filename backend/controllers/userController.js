@@ -5,28 +5,28 @@ import genrateTokenAndSetCookie from '../utils/helpers/generateTokenAndSetCookie
 import {v2 as cloudinary} from 'cloudinary';
 import mongoose from 'mongoose';
 
-const getUserProfile = async (req , res) => {
-  //we will fetch user profile either with username or userId
-  // query is either username or userId
-  const { query } = req.params;
+const getUserProfile = async (req, res) => {
+  const { query } = req.params; // أو يمكن استخدام req.query حسب السيناريو المطلوب
   try {
     let user;
 
-    //query is userId
+    // إذا كان query هو userId
     if(mongoose.Types.ObjectId.isValid(query)){
       user = await User.findOne({_id: query}).select("-password").select("-updatedAt");
-    }else{
-      //query is username
-      user = await User.findOne({ username: query }).select("-password").select("-updatedAt");
+    } else {
+      // إذا كان query هو username، نجعل البحث غير حساس لحالة الأحرف
+      user = await User.findOne({ username: new RegExp(`^${query.trim()}$`, 'i') }).select("-password").select("-updatedAt");
     }
+
     if(!user) return res.status(404).json({error: "User Not Found"});
 
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({error: err.message});
-    console.log("Erorr in getUserProfile: ",err.message);
+    console.log("Error in getUserProfile: ", err.message);
   }
 }
+
 
 const signupUser = async (req , res) => {
   try {
