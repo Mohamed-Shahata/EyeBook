@@ -28,17 +28,23 @@ const getUserProfile = async (req , res) => {
   }
 }
 
-const signupUser = async (req , res) => {
+const signupUser = async (req, res) => {
   try {
-    const {name , email , username , password} = req.body;
-    const user = await User.findOne({$or: [{email} , {username}]});
+    const { name, email, username, password } = req.body;
 
-    if(user){
-      return res.status(400).json({error: "User already exists"});
+    // التحقق من عدم وجود مسافات في اسم المستخدم
+    if (/\s/.test(username)) {
+      return res.status(400).json({ error: "Username must not contain spaces" });
+    }
+
+    const user = await User.findOne({ $or: [{ email }, { username: `@${username.trim()}` }] });
+
+    if (user) {
+      return res.status(400).json({ error: "User already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password , salt);
+    const hashPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
       name,
@@ -46,27 +52,29 @@ const signupUser = async (req , res) => {
       username: `@${username.trim()}`,
       password: hashPassword,
     });
+
     await newUser.save();
 
-    if(newUser){
-      genrateTokenAndSetCookie(newUser._id , res);
+    if (newUser) {
+      genrateTokenAndSetCookie(newUser._id, res);
       res.status(201).json({
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         username: newUser.username.trim(),
         bio: newUser.bio,
-        profilePic: newUser.profilePic
+        profilePic: newUser.profilePic,
       });
-    }else{
-      res.status(400).json({error: "Invalid user data"});
+    } else {
+      res.status(400).json({ error: "Invalid user data" });
     }
 
   } catch (err) {
-    res.status(500).json({error: err.message});
-    console.log("Erorr in signupUser: ",err.message);
+    res.status(500).json({ error: err.message });
+    console.log("Error in signupUser: ", err.message);
   }
-}
+};
+
 
 const loginUser = async (req , res) => {
   try {
