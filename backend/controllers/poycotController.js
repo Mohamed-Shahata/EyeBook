@@ -11,23 +11,14 @@ const getPoycot = async (req , res) => {
     res.status(500).json({error: error.message});
   }
 }
-const getPoycots = async (req, res) => {
+const getPoycots = async (req , res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const boycotItems = await Boycot.find()
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-    const total = await Poycot.countDocuments();
-    res.status(200).json({
-      boycotItems,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-    });
+    const poycot = await Poycot.find();
+    res.status(200).json(poycot);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({error: error.message});
   }
-};
-
+}
 
 const createPoycot = async (req, res) => {
   const { name, img } = req.body;
