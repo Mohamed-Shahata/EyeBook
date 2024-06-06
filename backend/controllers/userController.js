@@ -39,7 +39,7 @@ const signupUser = async (req , res) => {
     const newUser = new User({
       name,
       email,
-      username: `@${username}`,
+      username,
       password: hashPassword,
     });
     await newUser.save();
@@ -166,11 +166,7 @@ const updateUser = async (req , res) => {
 
     user.name = name || user.name;
     user.email = email || user.email;
-    if (username.charAt(0) !== '@') {
-      username = `@${username}` || `@${user.username}`;
-    }else{
-      user.username = username || user.username;
-    }
+    user.username = username || user.username;
     user.profilePic = profilePic || user.profilePic;
     user.bio = bio || user.bio;
 
