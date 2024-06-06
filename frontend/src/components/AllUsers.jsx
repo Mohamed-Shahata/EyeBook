@@ -1,19 +1,26 @@
-import { Avatar, Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Flex, Spinner, Text } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import useFollowUnfollow from "../hooks/useFollowUnfollow";
+import { useState } from "react";
 
 const AllUsers = ({user}) => {
 	const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
 	const currentUser = useRecoilValue(userAtom);
+	const [loading , setLoading] = useState(true)
 
 	return (
 		<>
-	{currentUser._id !== user._id && !following  ? (
+	{ currentUser._id !== user._id && !following  ? (
 
 
 			<Flex gap={2} justifyContent={"space-between"} alignItems={"center"} mb={5}>
+				{loading && (
+          <Flex justify="center">
+            <Spinner size="xl"/>
+          </Flex>
+        )}{setLoading(false)}
 				<Flex gap={2} as={Link} to={`/${user.username}`}>
 					<Avatar src={user?.profilePic} size={"lg"} name={user.name}/>
 					<Box mt={3} mx={1} >

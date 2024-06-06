@@ -7,7 +7,6 @@ const Boycott = () => {
   const [data, setData] = useState([]);
   const [searchTrim , setSearchTrim] = useState('')
   const [fillterBoycot , setFillterBoycot] = useState([]);
-  const [loading , setLoading] = useState(false);
   const showToast = useShowToast(); 
 
   useEffect(() => {
@@ -37,12 +36,11 @@ const Boycott = () => {
   }, [showToast]);
 
   useEffect(() => {
-    setLoading(true)
     const resalt = data.filter(item => item.name.toLowerCase().startsWith(searchTrim.toLowerCase()));
     setFillterBoycot(resalt)
   },[searchTrim , data])
 
-setLoading(false);
+
   return (
     <Flex wrap="wrap" justifyContent="center" gap={4} >
       <Box w={"full"} textAlign={"center"}>
@@ -60,7 +58,7 @@ setLoading(false);
             </Flex>
       </form>
       <Divider />
-      {loading && fillterBoycot.length !== 0 ? fillterBoycot.map((item) => (
+      {fillterBoycot.length !== 0 ? fillterBoycot.map((item) => (
         <Box key={item._id} flexDirection={"column"} justifyContent={"space-between"} maxW="250px" display={"flex"} alignItems={"center"} borderWidth="1px" borderRadius="lg" overflow="hidden">
             <Image src={item.img} alt="boycot" h={"100%"} objectFit={"cover"}/>
 
