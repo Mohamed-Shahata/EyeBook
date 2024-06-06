@@ -149,46 +149,57 @@ const followUnfollowUser = async (req , res) => {
   }
 }
 
-const updateUser = async (req , res) => {
-  const { name , email , username , password , bio} = req.body;
+const updateUser = async (req, res) => {
+  const { name, email, username, password, bio } = req.body;
   let { profilePic } = req.body;
   const userId = req.user._id;
+
   try {
     let user = await User.findById(userId);
-    if(!user){
-      return res.status(404).json({error: "User Not Found"});
-    }
-    if(req.params.id !== userId.toString()){
-      return res.status(400).json({error: "You connot update other user's profile"});
+    if (!user) {
+      return res.status(404).json({ error: "User Not Found" });
     }
 
-    if(password){
+    if (req.params.id !== userId.toString()) {
+      return res.status(400).json({ error: "You cannot update other user's profile" });
+    }
+
+    if (password) {
       const salt = await bcrypt.genSalt(10);
-      const hachPassword = await bcrypt.hash(password , salt);
-      user.password = hachPassword;
+      const hashPassword = await bcrypt.hash(password, salt);
+      user.password = hashPassword;
     }
 
-    if(profilePic){
-      if(user.profilePic){
+    if (profilePic) {
+      if (user.profilePic) {
         await cloudinary.uploader.destroy(user.profilePic.split("/").pop().split(".")[0]);
       }
-      const uploadeResponse = await cloudinary.uploader.upload(profilePic);
-      profilePic = uploadeResponse.secure_url;
+      const uploadResponse = await cloudinary.uploader.upload(profilePic);
+      profilePic = uploadResponse.secure_url;
     }
 
     user.name = name || user.name;
     user.email = email || user.email;
-    if (username.trim().charAt(0) !== '@') {
-      username = `@${username.trim()}` || `@${user.username.trim()}`;
-    }else{
-      user.username = username.trim() || user.username.trim();
+
+    // التحقق من عدم وجود مسافات في اسم المستخدم
+    if (username && /\s/.test(username)) {
+      return res.status(400).json({ error: "Username must not contain spaces" });
     }
+
+    if (username) {
+      if (username.trim().charAt(0) !== '@') {
+        user.username = `@${username.trim()}`;
+      } else {
+        user.username = username.trim();
+      }
+    }
+
     user.profilePic = profilePic || user.profilePic;
     user.bio = bio || user.bio;
 
     user = await user.save();
 
-    // Find all posts that this user replied and update username and userProfilePic fields
+    // تحديث جميع الردود التي تحتوي على userId لهذا المستخدم وتحديث حقلي username وuserProfilePic
     await Post.updateMany(
       { "replies.userId": userId },
       {
@@ -197,17 +208,18 @@ const updateUser = async (req , res) => {
           "replies.$[reply].userProfilePic": user.profilePic,
         },
       },
-    { arrayFilters: [{ "reply.userId": userId }] }
-  );
+      { arrayFilters: [{ "reply.userId": userId }] }
+    );
 
     user.password = null;
     res.status(200).json(user);
 
   } catch (err) {
-    res.status(500).json({error: err.message});
-    console.log("Erorr in updateUser: ", err);
+    res.status(500).json({ error: err.message });
+    console.log("Error in updateUser: ", err);
   }
-}
+};
+
 
 const getSuggestedUsers = async (req, res) => {
 	try {
