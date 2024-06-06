@@ -17,7 +17,7 @@ const getUserProfile = async (req , res) => {
       user = await User.findOne({_id: query}).select("-password").select("-updatedAt");
     }else{
       //query is username
-      user = await User.findOne({ username: query }).select("-password").select("-updatedAt");
+      user = await User.findOne({ username: query.trim() }).select("-password").select("-updatedAt");
     }
     if(!user) return res.status(404).json({error: "User Not Found"});
 
@@ -43,7 +43,7 @@ const signupUser = async (req , res) => {
     const newUser = new User({
       name,
       email,
-      username: `@${username}`,
+      username: `@${username.trim()}`,
       password: hashPassword,
     });
     await newUser.save();
@@ -54,7 +54,7 @@ const signupUser = async (req , res) => {
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
-        username: newUser.username,
+        username: newUser.username.trim(),
         bio: newUser.bio,
         profilePic: newUser.profilePic
       });
@@ -170,10 +170,10 @@ const updateUser = async (req , res) => {
 
     user.name = name || user.name;
     user.email = email || user.email;
-    if (username.charAt(0) !== '@') {
-      username = `@${username}` || `@${user.username}`;
+    if (username.trim().charAt(0) !== '@') {
+      username = `@${username.trim()}` || `@${user.username.trim()}`;
     }else{
-      user.username = username || user.username;
+      user.username = username.trim() || user.username.trim();
     }
     user.profilePic = profilePic || user.profilePic;
     user.bio = bio || user.bio;
