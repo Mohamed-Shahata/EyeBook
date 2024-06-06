@@ -9,15 +9,12 @@ const LogicAllUsers = () => {
   const [allUsers , setAllUsers] = useState([]);
 	const [searchTrim , setSearchTrim] = useState('')
   const [fillterUser , setFillterUser] = useState([]);
-	const [loading, setLoading] = useState(false);
-
 
 
 
 	const showToast = useShowToast();
 		useEffect(() => {
 			const getUsers = async () => {
-				setLoading(true);
 				try {
 					const res = await fetch("/api/users/allusers");
 					const data = await res.json();
@@ -31,8 +28,6 @@ const LogicAllUsers = () => {
 				} catch (error) {
 						showToast("Error" , error , "error");
             setAllUsers([]);
-				} finally {
-					setLoading(false);
 				}
 			}
 			getUsers();
@@ -59,7 +54,7 @@ const LogicAllUsers = () => {
               </Button>
             </Flex>
       </form>
-      {fillterUser.map((user) => <AllUsers key={user._id} user={user} loading={loading}/>)}
+      {fillterUser.map((user) => <AllUsers key={user._id} user={user} />)}
     </Container>
   )
 };
