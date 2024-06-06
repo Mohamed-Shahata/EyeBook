@@ -12,9 +12,13 @@ const getUserProfile = async (req , res) => {
   try {
     let user;
 
-    user = await User.findOne({ username: query }).select("-password").select("-updatedAt");
     //query is userId
-
+    if(mongoose.Types.ObjectId.isValid(query)){
+      user = await User.findOne({_id: query}).select("-password").select("-updatedAt");
+    }else{
+      //query is username
+      user = await User.findOne({ username: query }).select("-password").select("-updatedAt");
+    }
     if(!user) return res.status(404).json({error: "User Not Found"});
 
     res.status(200).json(user);
@@ -39,7 +43,7 @@ const signupUser = async (req , res) => {
     const newUser = new User({
       name,
       email,
-      username,
+      username: `@${username}`,
       password: hashPassword,
     });
     await newUser.save();
@@ -166,7 +170,11 @@ const updateUser = async (req , res) => {
 
     user.name = name || user.name;
     user.email = email || user.email;
-    user.username = username || user.username;
+    if (username.charAt(0) !== '@') {
+      username = `@${username}` || `@${user.username}`;
+    }else{
+      user.username = username || user.username;
+    }
     user.profilePic = profilePic || user.profilePic;
     user.bio = bio || user.bio;
 
