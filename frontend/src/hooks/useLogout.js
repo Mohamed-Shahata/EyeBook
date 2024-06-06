@@ -15,7 +15,7 @@ const useLogout = () => {
           "Content-Type": "application/json",
         },
       })
-      const data = await res.json;
+      const data = await res.json();
       if(data.error){
         showToast("Error" , data.error , "error");
         return;
