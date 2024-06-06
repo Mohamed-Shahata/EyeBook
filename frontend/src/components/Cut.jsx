@@ -1,15 +1,13 @@
-import { Box, Button, Divider, Flex, Image, Input, Spinner, Text } from "@chakra-ui/react";
+import { Box, Button, Divider, Flex, Image, Input, Text } from "@chakra-ui/react";
 import useShowToast from "../hooks/useShowToast";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "@chakra-ui/icons";
-import useGetUserProfile from "../hooks/useGetUserProfile";
 
 const Boycott = () => {
   const [data, setData] = useState([]);
   const [searchTrim , setSearchTrim] = useState('')
   const [fillterBoycot , setFillterBoycot] = useState([]);
-  const { loading } = useGetUserProfile();
-
+  const [loading , setLoading] = useState(false);
   const showToast = useShowToast(); 
 
   useEffect(() => {
@@ -39,11 +37,12 @@ const Boycott = () => {
   }, [showToast]);
 
   useEffect(() => {
+    setLoading(true)
     const resalt = data.filter(item => item.name.toLowerCase().startsWith(searchTrim.toLowerCase()));
     setFillterBoycot(resalt)
   },[searchTrim , data])
 
-
+setLoading(false);
   return (
     <Flex wrap="wrap" justifyContent="center" gap={4} >
       <Box w={"full"} textAlign={"center"}>
@@ -61,7 +60,7 @@ const Boycott = () => {
             </Flex>
       </form>
       <Divider />
-      {fillterBoycot.length !== 0 ? fillterBoycot.map((item) => (
+      {loading && fillterBoycot.length !== 0 ? fillterBoycot.map((item) => (
         <Box key={item._id} flexDirection={"column"} justifyContent={"space-between"} maxW="250px" display={"flex"} alignItems={"center"} borderWidth="1px" borderRadius="lg" overflow="hidden">
             <Image src={item.img} alt="boycot" h={"100%"} objectFit={"cover"}/>
 
@@ -79,7 +78,7 @@ const Boycott = () => {
             </Box>
           </Box>
         </Box>
-      )): loading ? <Flex justifyContent={"center"}> <Spinner size={"xl"} /> </Flex> :  <Text fontSize={40}>No Boycot</Text>}
+      )): <Text fontSize={40}>No Boycot</Text>}
     </Flex>
   );
 };
